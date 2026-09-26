@@ -42,39 +42,52 @@
   <div id="output">Output will appear here...</div>
 
   <script>
-    const API_KEY = "YOUR_API_KEY_HERE"; // Replace with your environment key
-    const MODEL_NAME = "gemini-1.5-flash"; // Flash handles higher capacity than Pro
+    const API_KEY = "YOUR_API_KEY_HERE";
+    // Array of fallback models in case one is overloaded
+    const MODELS = ["gemini-1.5-flash-8b", "gemini-1.5-flash", "gemini-2.0-flash"];
 
-    async function fetchWithRetry(url, options, maxRetries = 3) {
-      let delay = 1000; // Start with 1 second delay
-      
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          const response = await fetch(url, options);
-          const data = await response.json();
+    async function fetchWithModelFallback(promptText) {
+      let lastError = null;
 
-          if (response.ok) {
-            return data;
-          }
+      for (const model of MODELS) {
+        let delay = 1000;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+        const payload = {
+          contents: [{ parts: [{ text: promptText }] }]
+        };
 
-          // Check if response indicates temporary rate limit or high server load
-          const isHighDemand = response.status === 503 || response.status === 429 || 
-                               (data.error && data.error.message && data.error.message.includes("high demand"));
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            document.getElementById("output").innerText = `Requesting using ${model}...`;
+            const response = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
 
-          if (isHighDemand && attempt < maxRetries) {
-            document.getElementById("output").innerText = `Server busy. Retrying... (Attempt ${attempt + 1}/${maxRetries})`;
-            await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; // Exponential backoff (1s, 2s, 4s)
-            continue;
-          }
+            const data = await response.json();
 
-          throw new Error(data.error ? data.error.message : `HTTP error! status: ${response.status}`);
-        } catch (error) {
-          if (attempt === maxRetries) {
-            throw error;
+            if (response.ok) {
+              return data;
+            }
+
+            const isHighDemand = response.status === 503 || response.status === 429 || 
+                                 (data.error && data.error.message && data.error.message.includes("high demand"));
+
+            if (isHighDemand) {
+              lastError = new Error(`Model ${model} is experiencing high demand.`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              delay *= 2;
+              continue; // Retry once before switching to next model
+            }
+
+            throw new Error(data.error ? data.error.message : `HTTP error! status: ${response.status}`);
+          } catch (err) {
+            lastError = err;
           }
         }
       }
+      throw lastError || new Error("All model endpoints busy. Please try again in a few minutes.");
     }
 
     async function handleSubmit() {
@@ -90,20 +103,8 @@
       outputDiv.innerText = "Processing...";
       submitBtn.disabled = true;
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
-      const payload = {
-        contents: [{
-          parts: [{ text: promptText }]
-        }]
-      };
-
       try {
-        const result = await fetchWithRetry(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
+        const result = await fetchWithModelFallback(promptText);
         const textResponse = result.candidates[0].content.parts[0].text;
         outputDiv.innerText = textResponse;
       } catch (err) {
