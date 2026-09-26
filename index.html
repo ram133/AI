@@ -3,100 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Browser Chatbot</title>
+  <title>Gemini API Request</title>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, sans-serif; }
-    body { background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; height: 90vh; }
-    .config { display: flex; gap: 8px; margin-bottom: 12px; }
-    input[type="password"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
-    #chat-box { flex: 1; border: 1px solid #334155; background: #1e293b; border-radius: 8px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-    .msg { padding: 8px 12px; border-radius: 6px; max-width: 80%; width: fit-content; word-break: break-word; }
-    .user { background: #2563eb; align-self: flex-end; }
-    .ai { background: #334155; align-self: flex-start; }
-    .input-row { display: flex; gap: 8px; margin-top: 12px; }
-    input[type="text"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
-    button { padding: 12px 18px; border: none; background: #2563eb; color: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    button:disabled { background: #475569; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f4f4f4;
+      border-radius: 4px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="config">
-      <input type="password" id="key-input" placeholder="Paste Google AI Studio API Key">
-      <button id="save-key">Save Key</button>
-    </div>
-    <div id="chat-box"></div>
-    <div class="input-row">
-      <input type="text" id="user-input" placeholder="Ask Gemini something...">
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
+
+  <h2>Gemini API</h2>
+  <textarea id="prompt" placeholder="Enter your prompt here..."></textarea><br>
+  <button id="submitBtn" onclick="handleSubmit()">Send Request</button>
+
+  <div id="output">Output will appear here...</div>
 
   <script>
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const keyInput = document.getElementById('key-input');
-    const saveBtn = document.getElementById('save-key');
+    const API_KEY = "YOUR_API_KEY_HERE"; // Replace with your environment key
+    const MODEL_NAME = "gemini-1.5-flash"; // Flash handles higher capacity than Pro
 
-    keyInput.value = localStorage.getItem('gemini_key') || '';
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+      let delay = 1000; // Start with 1 second delay
+      
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, options);
+          const data = await response.json();
 
-    saveBtn.addEventListener('click', () => {
-      localStorage.setItem('gemini_key', keyInput.value.trim());
-      alert('API Key Saved locally!');
-    });
+          if (response.ok) {
+            return data;
+          }
 
-    const history = [];
+          // Check if response indicates temporary rate limit or high server load
+          const isHighDemand = response.status === 503 || response.status === 429 || 
+                               (data.error && data.error.message && data.error.message.includes("high demand"));
 
-    async function sendMessage() {
-      const prompt = userInput.value.trim();
-      const apiKey = keyInput.value.trim() || localStorage.getItem('gemini_key');
+          if (isHighDemand && attempt < maxRetries) {
+            document.getElementById("output").innerText = `Server busy. Retrying... (Attempt ${attempt + 1}/${maxRetries})`;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2; // Exponential backoff (1s, 2s, 4s)
+            continue;
+          }
 
-      if (!prompt) return;
-      if (!apiKey) {
-        alert('Please enter your Google AI Studio API key.');
+          throw new Error(data.error ? data.error.message : `HTTP error! status: ${response.status}`);
+        } catch (error) {
+          if (attempt === maxRetries) {
+            throw error;
+          }
+        }
+      }
+    }
+
+    async function handleSubmit() {
+      const promptText = document.getElementById("prompt").value;
+      const outputDiv = document.getElementById("output");
+      const submitBtn = document.getElementById("submitBtn");
+
+      if (!promptText) {
+        outputDiv.innerText = "Please enter a prompt.";
         return;
       }
 
-      appendMessage('user', prompt);
-      userInput.value = '';
-      sendBtn.disabled = true;
+      outputDiv.innerText = "Processing...";
+      submitBtn.disabled = true;
 
-      history.push({ role: 'user', parts: [{ text: prompt }] });
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+      const payload = {
+        contents: [{
+          parts: [{ text: promptText }]
+        }]
+      };
 
       try {
-        // Updated model endpoint to gemini-3.8-flash
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: history })
+        const result = await fetchWithRetry(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
-
-        const aiText = data.candidates[0].content.parts[0].text;
-        appendMessage('ai', aiText);
-
-        history.push({ role: 'model', parts: [{ text: aiText }] });
+        const textResponse = result.candidates[0].content.parts[0].text;
+        outputDiv.innerText = textResponse;
       } catch (err) {
-        appendMessage('ai', `Error: ${err.message}`);
+        outputDiv.innerText = "Error: " + err.message;
       } finally {
-        sendBtn.disabled = false;
+        submitBtn.disabled = false;
       }
     }
-
-    function appendMessage(role, text) {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `msg ${role}`;
-      msgDiv.innerText = text;
-      chatBox.appendChild(msgDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
   </script>
+
 </body>
 </html>
