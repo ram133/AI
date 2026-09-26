@@ -1,211 +1,106 @@
-# Save this file as index.html and push to your GitHub Pages repository
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XOR Neural Network Simulator</title>
+  <title>Gemini Browser Chatbot</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #f8fafc;
-      --accent: #38bdf8;
-      --border: #334155;
-    }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    }
-    .control-group {
-      margin-bottom: 1.25rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-    select, input, button {
-      width: 100%;
-      padding: 0.75rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: #0f172a;
-      color: var(--text);
-      box-sizing: border-box;
-      font-size: 1rem;
-    }
-    button {
-      background: var(--accent);
-      color: #0f172a;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      margin-top: 1rem;
-    }
-    button:hover {
-      opacity: 0.9;
-    }
-    .results {
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      padding: 0.5rem;
-      border: 1px solid var(--border);
-      text-align: center;
-    }
+    * { box-sizing: border-box; font-family: -apple-system, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; height: 90vh; }
+    .config { display: flex; gap: 8px; margin-bottom: 12px; }
+    input[type="password"] { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
+    #chat-box { flex: 1; border: 1px solid #334155; background: #1e293b; border-radius: 8px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .msg { padding: 8px 12px; border-radius: 6px; max-width: 80%; width: fit-content; word-break: break-word; }
+    .user { background: #2563eb; align-self: flex-end; }
+    .ai { background: #334155; align-self: flex-start; }
+    .input-row { display: flex; gap: 8px; margin-top: 12px; }
+    input[type="text"] { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #fff; }
+    button { padding: 12px 18px; border: none; background: #2563eb; color: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    button:disabled { background: #475569; }
   </style>
 </head>
 <body>
-
-<div class="card">
-  <h2>XOR Neural Network Simulator</h2>
-  <p>Train a basic neural network entirely in your browser.</p>
-
-  <div class="control-group">
-    <label for="activation">Activation Function</label>
-    <select id="activation">
-      <option value="sigmoid">Sigmoid</option>
-      <option value="relu">ReLU</option>
-      <option value="none">Linear (None)</option>
-    </select>
+  <div class="container">
+    <div class="config">
+      <input type="password" id="key-input" placeholder="Paste Google AI Studio API Key">
+      <button id="save-key">Save Key</button>
+    </div>
+    <div id="chat-box"></div>
+    <div class="input-row">
+      <input type="text" id="user-input" placeholder="Ask Gemini something...">
+      <button id="send-btn">Send</button>
+    </div>
   </div>
 
-  <div class="control-group">
-    <label for="epochs">Training Epochs</label>
-    <input type="number" id="epochs" value="10000" min="1000" max="50000" step="1000">
-  </div>
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const keyInput = document.getElementById('key-input');
+    const saveBtn = document.getElementById('save-key');
 
-  <div class="control-group">
-    <label for="lr">Learning Rate</label>
-    <input type="number" id="lr" value="0.1" step="0.01" min="0.01" max="1">
-  </div>
+    // Load stored key from localStorage
+    keyInput.value = localStorage.getItem('gemini_key') || '';
 
-  <button onclick="runTraining()">Train Network</button>
+    saveBtn.addEventListener('click', () => {
+      localStorage.setItem('gemini_key', keyInput.value.trim());
+      alert('API Key Saved locally!');
+    });
 
-  <div class="results" id="output" style="display: none;">
-    <h3>Results</h3>
-    <p id="metrics"></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Input A</th>
-          <th>Input B</th>
-          <th>Expected</th>
-          <th>Predicted</th>
-        </tr>
-      </thead>
-      <tbody id="predictions"></tbody>
-    </table>
-  </div>
-</div>
+    // Main conversation history array
+    const history = [];
 
-<script>
-class NeuralNetwork {
-  constructor(inputDim, hiddenDim, outputDim, actName) {
-    this.actName = actName;
-    this.w1 = Array.from({ length: inputDim }, () => Array.from({ length: hiddenDim }, () => Math.random() * 2 - 1));
-    this.b1 = Array.from({ length: hiddenDim }, () => Math.random() * 2 - 1);
-    this.w2 = Array.from({ length: hiddenDim }, () => Array.from({ length: outputDim }, () => Math.random() * 2 - 1));
-    this.b2 = Array.from({ length: outputDim }, () => Math.random() * 2 - 1);
-  }
+    async function sendMessage() {
+      const prompt = userInput.value.trim();
+      const apiKey = keyInput.value.trim() || localStorage.getItem('gemini_key');
 
-  activate(z) {
-    if (this.actName === 'sigmoid') return 1 / (1 + Math.exp(-z));
-    if (this.actName === 'relu') return Math.max(0, z);
-    return z; // none
-  }
-
-  forward(x) {
-    this.h_raw = this.b1.map((b, j) => x.reduce((sum, xi, i) => sum + xi * this.w1[i][j], b));
-    this.h_out = this.h_raw.map(z => this.activate(z));
-    this.o_raw = this.b2.map((b, j) => this.h_out.reduce((sum, hi, i) => sum + hi * this.w2[i][j], b));
-    this.o_out = this.o_raw.map(z => 1 / (1 + Math.exp(-z)));
-    return this.o_out;
-  }
-}
-
-function train(xs, ys, hidden, actName, lr, epochs) {
-  const net = new NeuralNetwork(xs[0].length, hidden, ys[0].length, actName);
-  for (let e = 0; e < epochs; e++) {
-    for (let idx = 0; idx < xs.length; idx++) {
-      const x = xs[idx];
-      const y = ys[idx];
-      const pred = net.forward(x);
-      const error = pred[0] - y[0];
-
-      for (let i = 0; i < x.length; i++) {
-        for (let j = 0; j < hidden; j++) {
-          net.w1[i][j] -= lr * error * x[i];
-        }
+      if (!prompt) return;
+      if (!apiKey) {
+        alert('Please enter your Google AI Studio API key.');
+        return;
       }
-      for (let j = 0; j < hidden; j++) {
-        for (let k = 0; k < ys[0].length; k++) {
-          net.w2[j][k] -= lr * error * net.h_out[j];
-        }
+
+      // Render User Message
+      appendMessage('user', prompt);
+      userInput.value = '';
+      sendBtn.disabled = true;
+
+      // Append to ongoing context
+      history.push({ role: 'user', parts: [{ text: prompt }] });
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: history })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+
+        const aiText = data.candidates[0].content.parts[0].text;
+        appendMessage('ai', aiText);
+
+        // Store assistant response in context history
+        history.push({ role: 'model', parts: [{ text: aiText }] });
+      } catch (err) {
+        appendMessage('ai', `Error: ${err.message}`);
+      } finally {
+        sendBtn.disabled = false;
       }
     }
-  }
-  return net;
-}
 
-function runTraining() {
-  const xs = [[0, 0], [0, 1], [1, 0], [1, 1]];
-  const ys = [[0], [1], [1], [0]];
+    function appendMessage(role, text) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${role}`;
+      msgDiv.innerText = text;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-  const actName = document.getElementById('activation').value;
-  const epochs = parseInt(document.getElementById('epochs').value, 10);
-  const lr = parseFloat(document.getElementById('lr').value);
-
-  const net = train(xs, ys, 2, actName, lr, epochs);
-
-  let totalLoss = 0;
-  let correct = 0;
-  const tableBody = document.getElementById('predictions');
-  tableBody.innerHTML = '';
-
-  xs.forEach((x, i) => {
-    const pred = net.forward(x);
-    const target = ys[i][0];
-    totalLoss += Math.pow(pred[0] - target, 2);
-    const binaryPred = pred[0] >= 0.5 ? 1 : 0;
-    if (binaryPred === target) correct++;
-
-    const row = `<tr>
-      <td>${x[0]}</td>
-      <td>${x[1]}</td>
-      <td>${target}</td>
-      <td>${pred[0].toFixed(4)}</td>
-    </tr>`;
-    tableBody.innerHTML += row;
-  });
-
-  const accuracy = (correct / xs.length) * 100;
-  const mse = totalLoss / xs.length;
-
-  document.getElementById('metrics').innerText = `Accuracy: ${accuracy.toFixed(0)}% | MSE Loss: ${mse.toFixed(4)}`;
-  document.getElementById('output').style.display = 'block';
-}
-</script>
-
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+  </script>
 </body>
 </html>
