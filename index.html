@@ -3,122 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tools & Resources</title>
+    <title>AI Tools & Developer Resources | Monetized Hub</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        header {
-            border-bottom: 2px solid #ea4335;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            color: #1a1a1a;
-            margin-bottom: 5px;
-        }
-        .container {
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .card {
-            background: #f4f6f8;
-            border-left: 4px solid #4285f4;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 0 6px 6px 0;
-        }
-        .card h3 {
-            margin-top: 0;
-            color: #1a73e8;
-        }
-        .contact-box {
-            margin-top: 30px;
-            padding: 15px;
-            background: #e8f0fe;
-            border-radius: 6px;
-        }
-        footer {
-            margin-top: 40px;
-            padding-top: 15px;
-            border-top: 1px solid #ddd;
-            font-size: 0.9em;
-        }
-        a {
-            color: #1a73e8;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f8fafc; --btn: #0070ba; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
+        h1 { color: var(--accent); margin-bottom: 8px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border: 1px solid #334155; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        .card h3 { color: var(--accent); margin-top: 0; }
+        .price { font-weight: bold; font-size: 1.2em; color: #4ade80; margin: 10px 0; }
+        .btn { display: inline-block; background: var(--btn); color: #fff; text-decoration: none; padding: 10px 16px; border-radius: 6px; text-align: center; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .contact { margin-top: 40px; padding: 20px; background: var(--card); border-radius: 8px; text-align: center; }
+        footer { margin-top: 40px; text-align: center; font-size: 0.9em; border-top: 1px solid #334155; padding-top: 20px; }
+        footer a { color: var(--accent); text-decoration: none; margin: 0 5px; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>AI Tools & Resources</h1>
-    </header>
-
     <div class="container">
-        <h2>Digital Assets & Developer Tools</h2>
-        <p>Premium resources, scripts, and production-ready boilerplates for digital creators.</p>
-        <p><strong>Specialty:</strong> AI model weights, automated workflows, custom prompt setups, and agentic AI tools.</p>
+        <header>
+            <h1>AI Tools & Production Resources</h1>
+            <p>Automated deployment scripts, agentic workflows, model configs, and open-source forks for creators and developers.</p>
+        </header>
 
-        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+        <main class="grid">
+            <div class="card">
+                <div>
+                    <h3>Local AI Deployment Pack</h3>
+                    <p>Automated setup scripts for local LLMs, Ollama, and Qwen model optimizations on Apple Silicon & Linux.</p>
+                    <div class="price">$19 USD</div>
+                </div>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=crh2509@icloud.com&item_name=Local+AI+Deployment+Pack&amount=19.00&currency_code=USD" class="btn">Buy via PayPal ($19)</a>
+            </div>
 
-        <h2>Featured Monetizable Repositories & Utilities</h2>
+            <div class="card">
+                <div>
+                    <h3>Agentic AI Starter Kit</h3>
+                    <p>Multi-agent architecture templates (PicoClaw/OpenClaw), Google Apps Script automations, and custom bots.</p>
+                    <div class="price">$29 USD</div>
+                </div>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=crh2509@icloud.com&item_name=Agentic+AI+Starter+Kit&amount=29.00&currency_code=USD" class="btn">Buy via PayPal ($29)</a>
+            </div>
 
-        <div class="card">
-            <h3>1. Bolt.diy (Open AI App Builder)</h3>
-            <p><strong>Repo:</strong> <a href="https://github.com/stackblitz-labs/bolt.diy" target="_blank">github.com/stackblitz-labs/bolt.diy</a> (MIT License)</p>
-            <p><strong>Monetization Model:</strong> Offer ready-to-use niche application prompts, custom system templates, and BYOK (Bring Your Own Key) setup packages for clients.</p>
-        </div>
+            <div class="card">
+                <div>
+                    <h3>Master AI Prompt Library</h3>
+                    <p>100+ structured prompts for code generation, local LLM steering, and audio/music synthesis.</p>
+                    <div class="price">$12 USD</div>
+                </div>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=crh2509@icloud.com&item_name=Master+AI+Prompt+Library&amount=12.00&currency_code=USD" class="btn">Buy via PayPal ($12)</a>
+            </div>
 
-        <div class="card">
-            <h3>2. Screenshot-to-Code Generator</h3>
-            <p><strong>Repo:</strong> <a href="https://github.com/abi/screenshot-to-code" target="_blank">github.com/abi/screenshot-to-code</a> (MIT License)</p>
-            <p><strong>Monetization Model:</strong> Convert UI images and designs to production HTML/Tailwind. Offer custom design-to-code consulting and custom component library add-ons.</p>
-        </div>
+            <div class="card">
+                <div>
+                    <h3>Single-File AI PWA Template</h3>
+                    <p>Production-ready web application template with embedded payment integration and local storage.</p>
+                    <div class="price">$25 USD</div>
+                </div>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=crh2509@icloud.com&item_name=Single-File+AI+PWA+Template&amount=25.00&currency_code=USD" class="btn">Buy via PayPal ($25)</a>
+            </div>
+        </main>
 
-        <div class="card">
-            <h3>3. AI Model VRAM & System Calculator</h3>
-            <p><strong>Repo:</strong> <a href="https://github.com/manuelescobar-dev/LLM-Tools" target="_blank">github.com/manuelescobar-dev/LLM-Tools</a> (MIT License)</p>
-            <p><strong>Monetization Model:</strong> Interactive web utility for hardware estimation. Upsell local Ollama hardware setup, model optimization scripts, and consulting.</p>
-        </div>
+        <section class="contact">
+            <h3>Direct Purchasing & Support</h3>
+            <p>Direct PayPal transfers: <strong>crh2509@icloud.com</strong></p>
+            <p>Direct Inquiries / Support: <strong>671-456-6963</strong> (671IKNOWME)</p>
+        </section>
 
-        <div class="card">
-            <h3>4. Agentic Workflow Engine</h3>
-            <p><strong>Repo:</strong> <a href="https://github.com/ANative-Lab/EvoAgentX" target="_blank">github.com/ANative-Lab/EvoAgentX</a> (MIT License)</p>
-            <p><strong>Monetization Model:</strong> Package automated workflows for lead generation, content creation, and data scraping into ready-to-deploy micro-services.</p>
-        </div>
-
-        <div class="contact-box">
-            <p><strong>Direct Contact & Support:</strong></p>
-            <p>Email / PayPal: <a href="mailto:crh2509@icloud.com">crh2509@icloud.com</a> | Phone: <a href="tel:6714566963">671-456-6963</a> (671IKNOWME)</p>
-        </div>
+        <footer>
+            <p><strong>Forked Repositories & Network:</strong></p>
+            <p>
+                <a href="https://github.com/ram133/ollama">ollama</a> | 
+                <a href="https://github.com/ram133/Qwen">Qwen</a> | 
+                <a href="https://github.com/ram133/browser-use">browser-use</a> | 
+                <a href="https://github.com/ram133/eliza">eliza</a> | 
+                <a href="https://github.com/ram133/stable-diffusion-webui">stable-diffusion-webui</a>
+            </p>
+            <p style="margin-top:10px;">
+                <a href="https://ram133.github.io/gyd/">GYD</a> | 
+                <a href="https://ram133.github.io/asset-store/">Asset Store</a> | 
+                <a href="https://ram133.github.io/niche-directory/">Niche Directory</a> | 
+                <a href="https://ram133.github.io/template-store/">Template Store</a> | 
+                <a href="https://ram133.github.io/code-boilerplates/">Code Boilerplates</a> | 
+                <a href="https://ram133.github.io/AI/">AI Hub</a>
+            </p>
+        </footer>
     </div>
-
-    <footer>
-        <p><strong>Developer Network:</strong> 
-            <a href="https://ram133.github.io/gyd/">GYD</a> | 
-            <a href="https://ram133.github.io/asset-store/">Asset Store</a> | 
-            <a href="https://ram133.github.io/niche-directory/">Niche Directory</a> | 
-            <a href="https://ram133.github.io/template-store/">Template Store</a> | 
-            <a href="https://ram133.github.io/prompt-pack/">Prompt Pack</a> | 
-            <a href="https://ram133.github.io/code-boilerplates/">Code Boilerplates</a> | 
-            <a href="https://ram133.github.io/design-assets/">Design Assets</a> | 
-            <a href="https://ram133.github.io/audio-presets/">Audio Presets</a> | 
-            <a href="https://ram133.github.io/api-vault/">API Vault</a> | 
-            <a href="https://ram133.github.io/micro-saas-kit/">Micro-SaaS Kit</a> | 
-            <a href="https://ram133.github.io/AI/">AI</a>
-        </p>
-    </footer>
 </body>
 </html>
